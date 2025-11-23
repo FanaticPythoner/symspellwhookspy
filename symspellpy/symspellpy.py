@@ -29,7 +29,7 @@ from collections import defaultdict
 from itertools import cycle
 from pathlib import Path
 from re import Pattern
-from typing import IO, Optional, Union
+from typing import IO, Optional, Protocol, Union
 
 from symspellpy import helpers
 from symspellpy.composition import Composition
@@ -40,6 +40,37 @@ from symspellpy.verbosity import Verbosity
 
 logger = logging.getLogger(__name__)
 WORD_PATTERN = re.compile(r"(([^\W_]|['’])+)")
+
+
+class SymSpellRanker(Protocol):
+    """Protocol for custom suggestion ranking functions.
+
+    A ranker receives the query phrase, the list of spell-check candidates,
+    and the verbosity level, then returns a reordered or filtered list.
+
+    Args:
+        phrase: The input query string being corrected.
+        suggestions: Current list of :class:`SuggestItem` candidates.
+        verbosity: The :class:`Verbosity` level used for the lookup.
+
+    Returns:
+        A list of :class:`SuggestItem` objects in the desired order.
+
+    Example:
+        >>> def my_ranker(phrase, suggestions, verbosity):
+        ...     # IDE infers types automatically from the Protocol
+        ...     return sorted(suggestions, key=lambda s: s.term)
+        ...
+        >>> sym = SymSpell(ranker=my_ranker)
+    """
+
+    def __call__(
+        self,
+        phrase: str,
+        suggestions: list["SuggestItem"],
+        verbosity: "Verbosity",
+    ) -> list["SuggestItem"]:
+        ...
 
 
 class SymSpell(PickleMixin):
@@ -87,6 +118,7 @@ class SymSpell(PickleMixin):
         prefix_length: int = 7,
         count_threshold: int = 1,
         distance_comparer: Optional[EditDistance] = None,
+        ranker: Optional[SymSpellRanker] = None,
     ) -> None:
         if max_dictionary_edit_distance < 0:
             raise ValueError("max_dictionary_edit_distance cannot be negative")
@@ -102,6 +134,7 @@ class SymSpell(PickleMixin):
             self.distance_comparer = EditDistance(DistanceAlgorithm.DAMERAU_OSA_FAST)
         else:
             self.distance_comparer = distance_comparer
+        self._ranker = ranker
         self._words: dict[str, int] = {}
         self._below_threshold_words: dict[str, int] = {}
         self._bigrams: dict[str, int] = {}
@@ -112,6 +145,57 @@ class SymSpell(PickleMixin):
         self._prefix_length = prefix_length
         self._count_threshold = count_threshold
         self._max_length = 0
+
+    @property
+    def ranker(
+        self,
+    ) -> Optional[SymSpellRanker]:
+        """Optional callable used to rank suggestions.
+
+        The callable takes the original *phrase*, the list of :class:`SuggestItem`
+        produced by the SymSpell search, and the :class:`Verbosity` used for the
+        lookup. It must return a list of :class:`SuggestItem` objects.
+
+        If ``None``, the default ordering (by edit distance ascending, then
+        frequency descending via :class:`SuggestItem`) is used.
+        """
+
+        return self._ranker
+
+    @ranker.setter
+    def ranker(
+        self,
+        value: Optional[SymSpellRanker],
+    ) -> None:
+        self._ranker = value
+
+    def _rank_suggestions(
+        self,
+        phrase: str,
+        suggestions: list[SuggestItem],
+        verbosity: "Verbosity",
+    ) -> list[SuggestItem]:
+        """Apply the ranking hook or fallback to default ordering.
+
+        This helper centralizes how suggestions are ordered before being
+        returned from :meth:`lookup` or :meth:`lookup_compound`.
+        """
+
+        # No suggestions to rank
+        if not suggestions:
+            return suggestions
+
+        # Custom ranker provided by the caller. It may modify or reorder
+        # suggestions as needed and must return a list of SuggestItem objects.
+        if self._ranker is not None:
+            return self._ranker(phrase, suggestions, verbosity)
+
+        # Default SymSpell ordering: for multiple candidates, order by
+        # distance ascending, then count descending. For a single candidate,
+        # return as-is.
+        if len(suggestions) > 1:
+            suggestions.sort()
+        return suggestions
 
     @property
     def below_threshold_words(self) -> dict[str, int]:
@@ -400,37 +484,52 @@ class SymSpell(PickleMixin):
         if transfer_casing:
             phrase = phrase.lower()
 
-        def early_exit():
+        def finalize() -> list[SuggestItem]:
+            """Append unknowns if requested and apply ranking+casing.
+
+            All return paths flow through here so that the optional ranker
+            hook and include_unknown logic are applied consistently.
+            """
+
             if include_unknown and not suggestions:
                 suggestions.append(SuggestItem(phrase, max_edit_distance + 1, 0))
-            return suggestions
+
+            ranked = self._rank_suggestions(phrase, suggestions, verbosity)
+
+            if transfer_casing:
+                ranked = [
+                    SuggestItem(
+                        helpers.case_transfer_similar(original_phrase, s.term),
+                        s.distance,
+                        s.count,
+                    )
+                    for s in ranked
+                ]
+            return ranked
 
         # early exit - word is too big to possibly match any words
         if phrase_len - max_edit_distance > self._max_length:
-            return early_exit()
+            return finalize()
 
         # quick look for exact match
         if phrase in self._words:
             suggestion_count = self._words[phrase]
-            if transfer_casing:
-                suggestions.append(SuggestItem(original_phrase, 0, suggestion_count))
-            else:
-                suggestions.append(SuggestItem(phrase, 0, suggestion_count))
+            suggestions.append(SuggestItem(phrase, 0, suggestion_count))
             # early exit - return exact match, unless caller wants all matches
             if verbosity != Verbosity.ALL:
-                return early_exit()
+                return finalize()
 
         if ignore_token is not None and re.match(ignore_token, phrase) is not None:
             suggestion_count = 1
             suggestions.append(SuggestItem(phrase, 0, suggestion_count))
             # early exit - return exact match, unless caller wants all matches
             if verbosity != Verbosity.ALL:
-                return early_exit()
+                return finalize()
 
         # early termination, if we only want to check if word in dictionary or
         # get its frequency e.g. for word segmentation
         if max_edit_distance == 0:
-            return early_exit()
+            return finalize()
 
         considered_deletes: set[str] = set()
         considered_suggestions: set[str] = set()
@@ -620,21 +719,7 @@ class SymSpell(PickleMixin):
                     if delete not in considered_deletes:
                         considered_deletes.add(delete)
                         candidates.append(delete)
-        if len(suggestions) > 1:
-            suggestions.sort()
-
-        if transfer_casing:
-            suggestions = [
-                SuggestItem(
-                    helpers.case_transfer_similar(original_phrase, s.term),
-                    s.distance,
-                    s.count,
-                )
-                for s in suggestions
-            ]
-
-        early_exit()
-        return suggestions
+        return finalize()
 
     def lookup_compound(
         self,
@@ -862,7 +947,9 @@ class SymSpell(PickleMixin):
             self.distance_comparer.compare(phrase, joined_term, 2**31 - 1),
             int(joined_count),
         )
-        return [suggestion]
+        suggestions = [suggestion]
+        suggestions = self._rank_suggestions(phrase, suggestions, Verbosity.TOP)
+        return suggestions
 
     def word_segmentation(
         self,

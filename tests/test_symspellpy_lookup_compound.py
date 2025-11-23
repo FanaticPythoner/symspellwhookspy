@@ -1,5 +1,7 @@
 import pytest
 
+from symspellpy import Verbosity
+
 
 class TestSymSpellPyLookupCompound:
     @pytest.mark.parametrize(
@@ -37,6 +39,33 @@ class TestSymSpellPyLookupCompound:
         results = symspell_default_entry.lookup_compound(typo, 2)
         assert 1 == len(results)
         assert typo == results[0].term
+
+    @pytest.mark.parametrize(
+        "symspell_default_entry", [[("steam", 1), ("machine", 1)]], indirect=True
+    )
+    def test_ranker_called_for_lookup_compound(self, symspell_default_entry):
+        called = {"any_call": False, "final_call": False, "verbosity": None}
+
+        def ranker(phrase, suggestions, verbosity):
+            called["any_call"] = True
+            # The ranker is invoked both for internal single-word lookups and
+            # once for the final compound suggestion. We only assert on the
+            # final, phrase-level invocation.
+            if " " in phrase:
+                called["final_call"] = True
+                called["verbosity"] = verbosity
+                assert len(suggestions) == 1
+                assert suggestions[0].term == "steam machine"
+            return suggestions
+
+        symspell_default_entry.ranker = ranker
+        typo = "ste am machie"
+        results = symspell_default_entry.lookup_compound(typo, 2)
+        assert called["any_call"] is True
+        assert called["final_call"] is True
+        assert called["verbosity"] == Verbosity.TOP
+        assert 1 == len(results)
+        assert "steam machine" == results[0].term
 
     @pytest.mark.parametrize(
         "symspell_default_load, get_fortests_data",

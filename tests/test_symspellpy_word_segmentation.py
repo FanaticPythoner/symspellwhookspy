@@ -1,4 +1,5 @@
 import pytest
+from typing import Tuple
 
 from symspellpy import SymSpell
 
@@ -65,3 +66,18 @@ class TestSymSpellPyWordSegmentation:
         correction = "There are some scientific words"
         result = sym_spell.word_segmentation(typo)
         assert correction == result[1]
+
+    @pytest.mark.parametrize("symspell_edit_distance_load", [0], indirect=True)
+    def test_ranker_called_in_word_segmentation(self, symspell_edit_distance_load: Tuple[SymSpell, int]):
+        sym_spell, _ = symspell_edit_distance_load
+
+        called = {"value": False}
+
+        def ranker(phrase, suggestions, verbosity):
+            called["value"] = True
+            return suggestions
+
+        sym_spell.ranker = ranker
+        typo = "therearesomewords"
+        _ = sym_spell.word_segmentation(typo)
+        assert called["value"] is True

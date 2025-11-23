@@ -168,3 +168,120 @@ class TestSymSpellPyLookup:
             typo, Verbosity.TOP, 2, transfer_casing=True
         )
         assert correction == result[0].term
+
+    def test_custom_ranker_changes_order(self):
+        symspell_default = SymSpell()
+        symspell_default.create_dictionary_entry("xbc", 3)
+        symspell_default.create_dictionary_entry("axc", 2)
+        symspell_default.create_dictionary_entry("abx", 1)
+
+        default_results = symspell_default.lookup("abc", Verbosity.ALL, 1)
+        default_terms = [s.term for s in default_results]
+
+        def ranker(phrase, suggestions, verbosity):
+            return sorted(suggestions, key=lambda s: s.term)
+
+        symspell_ranked = SymSpell(ranker=ranker)
+        symspell_ranked.create_dictionary_entry("xbc", 3)
+        symspell_ranked.create_dictionary_entry("axc", 2)
+        symspell_ranked.create_dictionary_entry("abx", 1)
+
+        ranked_results = symspell_ranked.lookup("abc", Verbosity.ALL, 1)
+        ranked_terms = [s.term for s in ranked_results]
+
+        assert default_terms != ranked_terms
+        assert ranked_terms == sorted(default_terms)
+
+    @pytest.mark.parametrize(
+        "symspell_default_entry",
+        [[("steama", 4), ("steamb", 6), ("steamc", 2)]],
+        indirect=True,
+    )
+    def test_ranker_applied_for_closest(self, symspell_default_entry):
+        def ranker(phrase, suggestions, verbosity):
+            assert verbosity == Verbosity.CLOSEST
+            # Ensure we see multiple candidates for CLOSEST
+            assert len(suggestions) > 1
+            # Deterministic reordering by term
+            return sorted(suggestions, key=lambda s: s.term)
+
+        symspell_default_entry.ranker = ranker
+        result = symspell_default_entry.lookup("stream", Verbosity.CLOSEST, 2)
+        result_terms = [s.term for s in result]
+        assert result_terms == sorted(result_terms)
+
+    def test_ranker_can_filter_suggestions(self):
+        symspell = SymSpell()
+        symspell.create_dictionary_entry("hello", 10)
+        symspell.create_dictionary_entry("hello1", 5)
+        symspell.create_dictionary_entry("hello2", 1)
+
+        def ranker(phrase, suggestions, verbosity):
+            # Keep only purely alphabetic terms
+            return [s for s in suggestions if s.term.isalpha()]
+
+        symspell.ranker = ranker
+        results = symspell.lookup("hello", Verbosity.ALL, 1)
+        terms = [s.term for s in results]
+        assert terms == ["hello"]
+
+    def test_ranker_called_for_top_exact_match(self):
+        symspell = SymSpell()
+        symspell.create_dictionary_entry("hello", 5)
+
+        called = {"value": False, "verbosity": None}
+
+        def ranker(phrase, suggestions, verbosity):
+            called["value"] = True
+            called["verbosity"] = verbosity
+            assert len(suggestions) == 1
+            assert suggestions[0].term == "hello"
+            return suggestions
+
+        symspell.ranker = ranker
+        result = symspell.lookup("hello", Verbosity.TOP, 0)
+        assert called["value"] is True
+        assert called["verbosity"] == Verbosity.TOP
+        assert len(result) == 1
+        assert result[0].term == "hello"
+
+    def test_ranker_called_for_ignore_token(self):
+        symspell = SymSpell()
+
+        # Ensure _max_length is large enough so that the early "too long"
+        # termination does not trigger before the ignore_token branch.
+        symspell.create_dictionary_entry("officeon", 1)
+
+        called = {"value": False}
+
+        def ranker(phrase, suggestions, verbosity):
+            called["value"] = True
+            assert len(suggestions) == 1
+            assert suggestions[0].term == "24th"
+            return suggestions
+
+        symspell.ranker = ranker
+        result = symspell.lookup("24th", Verbosity.TOP, 2, ignore_token=r"\d{2}\w*\b")
+        assert called["value"] is True
+        assert len(result) == 1
+        assert result[0].term == "24th"
+
+    def test_ranker_called_for_include_unknown(self):
+        symspell = SymSpell()
+
+        called = {"value": False, "distance": None}
+
+        def ranker(phrase, suggestions, verbosity):
+            called["value"] = True
+            assert len(suggestions) == 1
+            called["distance"] = suggestions[0].distance
+            assert suggestions[0].term == "zzzz"
+            return suggestions
+
+        symspell.ranker = ranker
+        result = symspell.lookup("zzzz", Verbosity.TOP, 2, include_unknown=True)
+        assert called["value"] is True
+        # distance should be max_edit_distance + 1 for unknowns
+        assert called["distance"] == 3
+        assert len(result) == 1
+        assert result[0].term == "zzzz"

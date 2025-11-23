@@ -20,5 +20,16 @@
 """
 
 from . import editdistance, helpers, logging
-from .symspellpy import SymSpell
+from .suggest_item import SuggestItem
+from .symspellpy import SymSpell, SymSpellRanker
 from .verbosity import Verbosity
+
+__all__ = [
+    "SymSpell",
+    "SymSpellRanker",
+    "SuggestItem",
+    "Verbosity",
+    "editdistance",
+    "helpers",
+    "logging",
+]

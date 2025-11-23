@@ -25,7 +25,7 @@ __version__ = "6.9.0+hooks.1"
 
 from . import editdistance, helpers, logging
 from .suggest_item import SuggestItem
-from .symspellpy import SymSpell, SymSpellRanker
+from .symspellwhookspy import SymSpell, SymSpellRanker
 from .verbosity import Verbosity
 
 __all__ = [

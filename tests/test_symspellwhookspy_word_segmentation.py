@@ -1,7 +1,7 @@
 import pytest
 from typing import Tuple
 
-from symspellpy import SymSpell
+from symspellwhookspy import SymSpell
 
 
 @pytest.fixture

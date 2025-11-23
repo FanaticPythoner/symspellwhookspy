@@ -1,4 +1,4 @@
-from symspellpy.helpers import null_distance_results, prefix_suffix_prep
+from symspellwhookspy.helpers import null_distance_results, prefix_suffix_prep
 
 
 def test_null_distance_results():

@@ -2,7 +2,7 @@ import sys
 
 import pytest
 
-from symspellpy import SymSpell, Verbosity
+from symspellwhookspy import SymSpell, Verbosity
 
 
 @pytest.fixture

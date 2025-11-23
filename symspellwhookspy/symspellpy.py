@@ -31,12 +31,12 @@ from pathlib import Path
 from re import Pattern
 from typing import IO, Optional, Protocol, Union
 
-from symspellpy import helpers
-from symspellpy.composition import Composition
-from symspellpy.editdistance import DistanceAlgorithm, EditDistance
-from symspellpy.pickle_mixin import PickleMixin
-from symspellpy.suggest_item import SuggestItem
-from symspellpy.verbosity import Verbosity
+from symspellwhookspy import helpers
+from symspellwhookspy.composition import Composition
+from symspellwhookspy.editdistance import DistanceAlgorithm, EditDistance
+from symspellwhookspy.pickle_mixin import PickleMixin
+from symspellwhookspy.suggest_item import SuggestItem
+from symspellwhookspy.verbosity import Verbosity
 
 logger = logging.getLogger(__name__)
 WORD_PATTERN = re.compile(r"(([^\W_]|['’])+)")

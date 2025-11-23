@@ -10,7 +10,7 @@ Basic usage
 
   import importlib.resources
 
-  from symspellpy import SymSpell, Verbosity
+  from symspellwhookspy import SymSpell, Verbosity
 
   sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
   dictionary_path = importlib.resources("symspellpy") / "frequency_dictionary_en_82_765.txt"
@@ -39,7 +39,7 @@ Return original word if no correction within edit distance is found
 
   import importlib.resources
 
-  from symspellpy import SymSpell, Verbosity
+  from symspellwhookspy import SymSpell, Verbosity
 
   sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
   dictionary_path = importlib.resources("symspellpy") / "frequency_dictionary_en_82_765.txt"
@@ -73,7 +73,7 @@ Avoid correcting phrases matching regex
 
   import importlib.resources
 
-  from symspellpy import SymSpell, Verbosity
+  from symspellwhookspy import SymSpell, Verbosity
 
   sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
   dictionary_path = importlib.resources("symspellpy") / "frequency_dictionary_en_82_765.txt"
@@ -106,7 +106,7 @@ Keep original casing
 
   import importlib.resources
 
-  from symspellpy import SymSpell, Verbosity
+  from symspellwhookspy import SymSpell, Verbosity
 
   sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
   dictionary_path = importlib.resources("symspellpy") / "frequency_dictionary_en_82_765.txt"

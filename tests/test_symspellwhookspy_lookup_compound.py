@@ -1,6 +1,6 @@
 import pytest
 
-from symspellpy import Verbosity
+from symspellwhookspy import Verbosity
 
 
 class TestSymSpellPyLookupCompound:

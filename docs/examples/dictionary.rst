@@ -23,7 +23,7 @@ We can use :meth:`~symspellpy.symspellpy.SymSpell.load_dictionary`:
   import importlib.resources
   from itertools import islice
 
-  from symspellpy import SymSpell
+  from symspellwhookspy import SymSpell
 
   sym_spell = SymSpell()
   dictionary_path = importlib.resources("symspellpy") / "frequency_dictionary_en_82_765.txt"
@@ -55,7 +55,7 @@ We can use :meth:`~symspellpy.symspellpy.SymSpell.load_bigram_dictionary`:
   import importlib.resources
   from itertools import islice
 
-  from symspellpy import SymSpell
+  from symspellwhookspy import SymSpell
 
   sym_spell = SymSpell()
   dictionary_path = importlib.resources.files("symspellpy") / "frequency_bigramdictionary_en_243_342.txt"
@@ -94,7 +94,7 @@ We can specify "$" as the custom `separator` in
 
   from itertools import islice
 
-  from symspellpy import SymSpell
+  from symspellwhookspy import SymSpell
 
   sym_spell = SymSpell()
   dictionary_path = <path/to/dictionary>
@@ -123,7 +123,7 @@ We can also specify "$" as the custom `separator` in
 
   from itertools import islice
 
-  from symspellpy import SymSpell
+  from symspellwhookspy import SymSpell
 
   sym_spell = SymSpell()
   dictionary_path = <path/to/dictionary>
@@ -153,7 +153,7 @@ We can create a dictionary from the file using
 .. code-block:: python
    :emphasize-lines: 5
 
-   from symspellpy import SymSpell
+   from symspellwhookspy import SymSpell
 
    sym_spell = SymSpell()
    corpus_path = <path/to/plain/text/file>

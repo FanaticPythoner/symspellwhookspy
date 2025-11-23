@@ -10,7 +10,7 @@ Basic usage
 
   import importlib.resources
 
-  from symspellpy import SymSpell
+  from symspellwhookspy import SymSpell
 
   sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
   dictionary_path = importlib.resources("symspellpy") / "frequency_dictionary_en_82_765.txt"
@@ -44,7 +44,7 @@ Keep original casing
 
   import importlib.resources
 
-  from symspellpy import SymSpell
+  from symspellwhookspy import SymSpell
 
   sym_spell = SymSpell(max_dictionary_edit_distance=2, prefix_length=7)
   dictionary_path = importlib.resources("symspellpy") / "frequency_dictionary_en_82_765.txt"

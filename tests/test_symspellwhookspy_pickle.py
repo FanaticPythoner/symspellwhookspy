@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import pytest
 
-from symspellpy import SymSpell
+from symspellwhookspy import SymSpell
 
 
 class TestSymSpellPyPickle:

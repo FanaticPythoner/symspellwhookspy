@@ -1,6 +1,6 @@
 import pytest
 
-from symspellpy.suggest_item import SuggestItem
+from symspellwhookspy.suggest_item import SuggestItem
 
 
 @pytest.fixture

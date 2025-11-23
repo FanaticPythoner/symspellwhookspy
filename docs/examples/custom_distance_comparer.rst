@@ -13,9 +13,9 @@ Create a comparer class which satisfies the interface specified by
    import importlib.resources
    from itertools import islice
 
-   from symspellpy import SymSpell
-   from symspellpy.abstract_distance_comparer import AbstractDistanceComparer
-   from symspellpy.editdistance import DistanceAlgorithm, EditDistance
+   from symspellwhookspy import SymSpell
+   from symspellwhookspy.abstract_distance_comparer import AbstractDistanceComparer
+   from symspellwhookspy.editdistance import DistanceAlgorithm, EditDistance
 
    class CustomComparer(AbstractDistanceComparer):
        def distance(self, string_1, string_2, max_distance):

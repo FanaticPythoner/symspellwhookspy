@@ -13,11 +13,15 @@
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
 
-"""symspellpy
+"""symspellwhookspy - SymSpell with custom ranker hooks
+
+Fork of symspellpy adding SymSpellRanker Protocol for custom tie-breaking.
 
 .. moduleauthor:: mmb L <mammothb@hotmail.com>
 .. moduleauthor:: Wolf Garbe <wolf.garbe@faroo.com>
 """
+
+__version__ = "6.9.0+hooks.1"
 
 from . import editdistance, helpers, logging
 from .suggest_item import SuggestItem

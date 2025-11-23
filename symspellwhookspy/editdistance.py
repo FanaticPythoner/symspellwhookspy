@@ -24,8 +24,8 @@ from typing import Optional
 
 from editdistpy import damerau_osa, levenshtein
 
-from symspellpy import helpers
-from symspellpy.abstract_distance_comparer import AbstractDistanceComparer
+from symspellwhookspy import helpers
+from symspellwhookspy.abstract_distance_comparer import AbstractDistanceComparer
 
 
 class DistanceAlgorithm(Enum):

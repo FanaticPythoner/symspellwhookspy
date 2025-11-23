@@ -4,7 +4,7 @@ from pathlib import Path
 import importlib_resources
 import pytest
 
-from symspellpy import SymSpell
+from symspellwhookspy import SymSpell
 
 FORTESTS_DIR = Path(__file__).resolve().parent / "fortests"
 
@@ -15,7 +15,7 @@ FORTESTS_DIR = Path(__file__).resolve().parent / "fortests"
 @pytest.fixture
 def bigram_path():
     ref = (
-        importlib_resources.files("symspellpy")
+        importlib_resources.files("symspellwhookspy")
         / "frequency_bigramdictionary_en_243_342.txt"
     )
     with importlib_resources.as_file(ref) as path:
@@ -24,7 +24,7 @@ def bigram_path():
 
 @pytest.fixture
 def dictionary_path():
-    ref = importlib_resources.files("symspellpy") / "frequency_dictionary_en_82_765.txt"
+    ref = importlib_resources.files("symspellwhookspy") / "frequency_dictionary_en_82_765.txt"
     with importlib_resources.as_file(ref) as path:
         yield path
 

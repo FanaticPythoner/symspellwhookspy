@@ -4,10 +4,10 @@ from unittest import TestCase
 
 import pytest
 
-from symspellpy import SymSpell, Verbosity
-from symspellpy.abstract_distance_comparer import AbstractDistanceComparer
-from symspellpy.editdistance import DistanceAlgorithm, EditDistance
-from symspellpy.helpers import DictIO
+from symspellwhookspy import SymSpell, Verbosity
+from symspellwhookspy.abstract_distance_comparer import AbstractDistanceComparer
+from symspellwhookspy.editdistance import DistanceAlgorithm, EditDistance
+from symspellwhookspy.helpers import DictIO
 
 FORTESTS_DIR = Path(__file__).resolve().parent / "fortests"
 BAD_DICT_PATH = FORTESTS_DIR / "bad_dict.txt"

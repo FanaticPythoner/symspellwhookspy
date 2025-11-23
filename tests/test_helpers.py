@@ -1,6 +1,6 @@
 import pytest
 
-from symspellpy.helpers import (
+from symspellwhookspy.helpers import (
     case_transfer_matching,
     case_transfer_similar,
     is_acronym,

@@ -3,8 +3,8 @@ from itertools import combinations, permutations
 
 import pytest
 
-from symspellpy.abstract_distance_comparer import AbstractDistanceComparer
-from symspellpy.editdistance import (
+from symspellwhookspy.abstract_distance_comparer import AbstractDistanceComparer
+from symspellwhookspy.editdistance import (
     DamerauOsa,
     DamerauOsaFast,
     DistanceAlgorithm,

@@ -10,7 +10,7 @@ Basic usage
 
   import importlib.resources
 
-  from symspellpy.symspellpy import SymSpell
+  from symspellwhookspy.symspellpy import SymSpell
 
   # Set max_dictionary_edit_distance to avoid spelling correction
   sym_spell = SymSpell(max_dictionary_edit_distance=0, prefix_length=7)

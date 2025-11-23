@@ -16,7 +16,7 @@ This is a fork of [symspellpy](https://github.com/mammothb/symspellpy) that adds
 ## Installation
 
 ```bash
-pip install symspellwhookspy
+pip install git+https://github.com/FanaticPythoner/symspellwhookspy.git
 ```
 
 ## Usage
@@ -46,3 +46,4 @@ results = sym_spell.lookup("helo", Verbosity.CLOSEST, max_edit_distance=2)
 Based on [symspellpy](https://github.com/mammothb/symspellpy) v6.9.0, which is a Python port of [SymSpell](https://github.com/wolfgarbe/SymSpell) v6.7.2.
 
 All original features, performance characteristics, and unit tests are preserved.
+
